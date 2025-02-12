@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>Element Plus CRUD 示例</title>
+  <!-- Element Plus 样式 -->
+  <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+  <style>
+    body {
+      padding: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <el-card>
+      <h2>增删改查示例</h2>
+      <!-- 添加表单 -->
+      <el-form inline @submit.native.prevent>
+        <el-form-item>
+          <el-input placeholder="请输入名称" v-model="newName" clearable></el-input>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="addItem">添加</el-button>
+        </el-form-item>
+      </el-form>
+
+      <!-- 数据表格 -->
+      <el-table :data="dataList" style="width: 100%; margin-top: 20px;">
+        <el-table-column prop="id" label="ID" width="180"></el-table-column>
+        <el-table-column label="名称">
+          <template #default="scope">
+            <div v-if="editingId === scope.row.id">
+              <el-input v-model="editingName" size="small" style="width: 200px;"></el-input>
+            </div>
+            <div v-else>
+              {{ scope.row.name }}
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="200">
+          <template #default="scope">
+            <div v-if="editingId === scope.row.id">
+              <el-button type="primary" size="small" @click="updateItem">保存</el-button>
+              <el-button size="small" @click="cancelEdit">取消</el-button>
+            </div>
+            <div v-else>
+              <el-button type="success" size="small" @click="startEdit(scope.row)">编辑</el-button>
+              <el-button type="danger" size="small" @click="deleteItem(scope.row.id)">删除</el-button>
+            </div>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-card>
+  </div>
+
+  <!-- Vue 3 与 Element Plus CDN 引入 -->
+  <script src="https://unpkg.com/vue@3"></script>
+  <script src="https://unpkg.com/element-plus"></script>
+  <script>
+    const { createApp, reactive, ref } = Vue;
+
+    createApp({
+      setup() {
+        // 初始数据列表（示例数据）
+        const dataList = reactive([
+          { id: 1, name: '项目一' },
+          { id: 2, name: '项目二' }
+        ]);
+
+        const newName = ref('');
+        const editingId = ref(null);
+        const editingName = ref('');
+
+        // 添加数据项
+        const addItem = () => {
+          if(newName.value.trim() === '') return;
+          dataList.push({
+            id: Date.now(),
+            name: newName.value
+          });
+          newName.value = '';
+        };
+
+        // 删除数据项
+        const deleteItem = (id) => {
+          const index = dataList.findIndex(item => item.id === id);
+          if(index !== -1) {
+            dataList.splice(index, 1);
+          }
+        };
+
+        // 开始编辑数据项
+        const startEdit = (item) => {
+          editingId.value = item.id;
+          editingName.value = item.name;
+        };
+
+        // 取消编辑
+        const cancelEdit = () => {
+          editingId.value = null;
+          editingName.value = '';
+        };
+
+        // 更新数据项
+        const updateItem = () => {
+          if(editingName.value.trim() === '') return;
+          const item = dataList.find(item => item.id === editingId.value);
+          if(item) {
+            item.name = editingName.value;
+            cancelEdit();
+          }
+        };
+
+        return {
+          dataList,
+          newName,
+          editingId,
+          editingName,
+          addItem,
+          deleteItem,
+          startEdit,
+          cancelEdit,
+          updateItem
+        };
+      }
+    }).use(ElementPlus).mount('#app');
+  </script>
+</body>
+</html>
